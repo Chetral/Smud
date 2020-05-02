@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ConfigFile
+
 
 public extension DB {
     func loadAccounts() throws {
@@ -59,20 +59,20 @@ public extension DB {
         try completion(count)
     }
     
-    public func createAccountId() -> Int64 {
+    func createAccountId() -> Int64 {
         defer { nextAccountId += 1 }
         return nextAccountId
     }
     
-    public func account(id: Int64) -> Account? {
+    func account(id: Int64) -> Account? {
         return accountsById[id]
     }
     
-    public func account(email: String) -> Account? {
+    func account(email: String) -> Account? {
         return accountsByLowercasedEmail[email.lowercased()]
     }
     
-    public func addToIndexes(account: Account) {
+    func addToIndexes(account: Account) {
         accountsById[account.accountId] = account
         accountsByLowercasedEmail[account.email.lowercased()] = account
     }

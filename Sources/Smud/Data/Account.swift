@@ -11,7 +11,6 @@
 //
 
 import Foundation
-import ConfigFile
 
 public final class Account {
     public let smud: Smud
@@ -55,7 +54,11 @@ extension Account: Equatable {
 }
 
 extension Account: Hashable {
-    public var hashValue: Int { return accountId.hashValue }
+    // deprecated
+    // public var hashValue: Int { return accountId.hashValue }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(accountId.hashValue)
+    }
 }
 
 struct AccountError: Error, CustomStringConvertible {

@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ScannerUtils
+
 
 public class Link: CustomStringConvertible {
     public var areaId: String?

@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ScannerUtils
+
 
 struct AreaParseError: Error, CustomStringConvertible {
     enum Kind: CustomStringConvertible {

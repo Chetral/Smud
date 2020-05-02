@@ -22,7 +22,7 @@ public extension DB {
         var counters = [Int](repeating: 0, count: smud.areaFileExtensions.count)
         try enumerateFiles(atPath: smud.areasDirectory) { filename, stop in
             
-            guard let extensionIndex  = dotExtensions.index(where: { filename.hasSuffix($0) }) else {
+            guard let extensionIndex  = dotExtensions.firstIndex(where: { filename.hasSuffix($0) }) else {
                 return
             }
             

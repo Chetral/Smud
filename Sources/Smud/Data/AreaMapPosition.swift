@@ -12,7 +12,7 @@
 
 
 import Foundation
-import Utils
+
 
 public struct AreaMapPosition: Hashable, Equatable {
     public enum Axis {
@@ -127,7 +127,14 @@ public struct AreaMapPosition: Hashable, Equatable {
             lhs.x == rhs.x && lhs.y == rhs.y
     }
 
-    public var hashValue: Int { return combinedHash(x, y, plane) }
+    // deprecated
+    //public var hashValue: Int { return combinedHash(x, y, plane) }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
+        hasher.combine(plane)
+    }
+    
 }
 
 public func +(left: AreaMapPosition, right: AreaMapPosition) -> AreaMapPosition {

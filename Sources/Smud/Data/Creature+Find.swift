@@ -13,13 +13,13 @@
 import Foundation
 
 public extension Creature {
-    public enum FindResult {
+    enum FindResult {
         case creature(Creature)
         case item(Item)
         case room(Room)
     }
     
-    public struct SearchEntityTypes: OptionSet {
+    struct SearchEntityTypes: OptionSet {
         public let rawValue: Int
 
         public static let creature = SearchEntityTypes(rawValue: 1 << 0)
@@ -29,7 +29,7 @@ public extension Creature {
         public init(rawValue: Int) { self.rawValue = rawValue }
     }
     
-    public struct SearchLocations: OptionSet {
+    struct SearchLocations: OptionSet {
         public let rawValue: Int
         
         public static let world = SearchLocations(rawValue: 1 << 0)
@@ -40,7 +40,7 @@ public extension Creature {
         public init(rawValue: Int) { self.rawValue = rawValue }
     }
     
-    public func findCreature(selector: EntitySelector, locations: SearchLocations) -> Creature? {
+    func findCreature(selector: EntitySelector, locations: SearchLocations) -> Creature? {
         let result = find(selector: selector, entityTypes: .creature, locations: locations)
         guard let first = result.first,
             case .creature(let creature) = first else {
@@ -49,7 +49,7 @@ public extension Creature {
         return creature
     }
     
-    public func findOne(selector: EntitySelector, entityTypes: SearchEntityTypes, locations: SearchLocations) -> FindResult? {
+    func findOne(selector: EntitySelector, entityTypes: SearchEntityTypes, locations: SearchLocations) -> FindResult? {
         guard selector.startingIndex == 1 && selector.count == 1 else {
             return nil
         }
@@ -58,7 +58,7 @@ public extension Creature {
         return results.first
     }
     
-    public func find(selector: EntitySelector, entityTypes: SearchEntityTypes, locations: SearchLocations) -> [FindResult] {
+    func find(selector: EntitySelector, entityTypes: SearchEntityTypes, locations: SearchLocations) -> [FindResult] {
         
         guard selector.startingIndex > 0 && selector.count > 0 else { return [] }
         

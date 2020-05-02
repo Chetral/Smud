@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ConfigFile
+
 
 public class Creature {
     public let world: World

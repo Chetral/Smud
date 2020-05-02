@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import Utils
+
 
 class AreaMapper {
     struct RoomAndDirection: Hashable {
@@ -22,8 +22,13 @@ class AreaMapper {
             return lhs.room == rhs.room &&
                 lhs.direction == rhs.direction
         }
+    // deprecated
+       // public var hashValue: Int { return combinedHash(room, direction) }
         
-        public var hashValue: Int { return combinedHash(room, direction) }
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(room)
+            hasher.combine(direction)
+        }
     }
     
     func buildAreaMap(startingRoom: Room) -> AreaMap {

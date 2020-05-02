@@ -143,5 +143,9 @@ extension Room: Equatable {
 }
 
 extension Room: Hashable {
-    public var hashValue: Int { return id.hashValue }
+    // deprecated
+    // public var hashValue: Int { return id.hashValue }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id.hashValue)
+    }
 }

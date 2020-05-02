@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ConfigFile
+
 
 public extension DB {
     func loadPlayers() throws {
@@ -59,12 +59,12 @@ public extension DB {
         try completion(count)
     }
     
-    public func createPlayerId() -> Int64 {
+    func createPlayerId() -> Int64 {
         defer { nextPlayerId += 1 }
         return nextPlayerId
     }
     
-    public func addToIndexes(player: Player) {
+    func addToIndexes(player: Player) {
         let accountId = player.account.accountId
         
         var v = playersByAccountId[accountId] ?? []
@@ -74,7 +74,7 @@ public extension DB {
         playersByLowercasedName[player.name.lowercased()] = player
     }
     
-    public func removeFromIndexes(player: Player) {
+    func removeFromIndexes(player: Player) {
         let accountId = player.account.accountId
         if var v = playersByAccountId[accountId] {
             v.remove(player)
@@ -88,11 +88,11 @@ public extension DB {
         playersByLowercasedName.removeValue(forKey: player.name.lowercased())
     }
     
-    public func player(name: String) -> Player? {
+    func player(name: String) -> Player? {
         return playersByLowercasedName[name.lowercased()]
     }
     
-    public func players(accountId: Int64) -> Set<Player> {
+    func players(accountId: Int64) -> Set<Player> {
         return playersByAccountId[accountId] ?? []
     }
 }

@@ -106,6 +106,10 @@ extension AreaInstance: Equatable {
 }
 
 extension AreaInstance: Hashable {
-    public var hashValue: Int { return ObjectIdentifier(self).hashValue }
+    //deprecated
+    // public var hashValue: Int { return ObjectIdentifier(self).hashValue }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self).hashValue)
+    }
 }
 

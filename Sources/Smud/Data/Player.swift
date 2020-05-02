@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ConfigFile
+
 
 public final class Player: Creature {
     public var playerId: Int64
@@ -67,7 +67,11 @@ public final class Player: Creature {
 //}
 
 extension Player: Hashable {
-    public var hashValue: Int { return playerId.hashValue }
+    // deprecated
+    //public var hashValue: Int { return playerId.hashValue }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(playerId.hashValue)
+    }
 }
 
 struct PlayerError: Error, CustomStringConvertible {

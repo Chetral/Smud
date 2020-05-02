@@ -11,7 +11,7 @@
 //
 
 import Foundation
-import ConfigFile
+
 
 public class Area {
     public let id: String
@@ -92,7 +92,12 @@ extension Area: Equatable {
 }
 
 extension Area: Hashable {
-    public var hashValue: Int { return id.hashValue }
+    // depracated
+    // public var hashValue: Int { return id.hashValue }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id.hashValue)
+        
+    }
 }
 
 

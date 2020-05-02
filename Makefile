@@ -15,11 +15,6 @@ clean:
 distclean:
 	swift build --clean dist
 
-fetch-master:
-	swift package fetch
-	(cd Packages/ConfigFile-*; git checkout master; git pull)
-	(cd Packages/Utils-*; git checkout master; git pull)
-
 tags:
 	ctags -R ./ ../swift-corelibs-foundation/ ../swift-corelibs-libdispatch/
 
