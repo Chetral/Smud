@@ -294,6 +294,14 @@ public class ConfigFile {
             reset(name)
         }
     }
+    // correction for set get -- Swift forum Lantua
+    public func set<T>(_ name: String, _ value: T?) where T: SignedInteger{
+        if let value = value {
+            set(name, String(describing: value))
+        } else {
+            reset(name)
+        }
+    }
     
     // Maybe over complicated a bit: http://stackoverflow.com/questions/32102936/how-do-you-enumerate-optionsettype-in-swift-2
     // changed for Swift 4+ MP
