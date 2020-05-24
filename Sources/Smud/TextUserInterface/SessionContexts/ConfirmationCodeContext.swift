@@ -11,27 +11,30 @@
 //
 
 import Foundation
+import Socket
 
 
 final class ConfirmationCodeContext: SessionContext {
     static var name = "confirmationCode"
     let smud: Smud
-    
-    init(smud: Smud) {
+    let socket: Socket
+
+    init(smud: Smud, socket: Socket) {
         self.smud = smud
+        self.socket = socket
     }
-    
+
     func greet(session: Session) {
-        session.sendPrompt("Please enter the confirmation code: ")
+        session.sendPrompt("Please enter the confirmation code: ", socket: socket)
     }
-    
+
     func processResponse(args: Scanner, session: Session) -> ContextAction {
         guard let code = args.scanWord(), code == "123" else {
             return .retry(reason: "Ivalid confirmation code.")
         }
-        
-        session.send("Your account has been succesfully created.")
-        
-        return .next(context: PlayerNameContext(smud: smud))
+
+        session.send("Your account has been succesfully created.", socket: socket)
+
+        return .next(context: PlayerNameContext(smud: smud, socket: socket))
     }
 }

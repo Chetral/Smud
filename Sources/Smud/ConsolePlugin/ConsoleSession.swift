@@ -11,37 +11,46 @@
 //
 
 import Foundation
+import Socket
 
 
 class ConsoleSession: Session {
+
+
     public var textUserInterface: TextUserInterface
-    
+    public var socket : Socket
+
     public var context: SessionContext? {
         didSet {
             context?.greet(session: self)
         }
     }
-    
+
+
     public var account: Account?
     public var creature: Creature?
 
-    public init(textUserInterface: TextUserInterface) {
+    public init(textUserInterface: TextUserInterface, socket: Socket) {
         self.textUserInterface = textUserInterface
+        self.socket = socket
     }
-    
-    public func send(items: [Any], separator: String, terminator: String, isPrompt: Bool) {
-        var first = true
+
+    public func send(items: [Any], separator: String, terminator: String, isPrompt: Bool, socket: Socket) {
+//        var first = true
+
         for item in items {
-            if first {
-                first = false
-            } else {
-                print(separator, terminator: "")
-            }
-            print(item, terminator: "")
-        }
-        print(terminator: terminator)
-        //if isPrompt {
-        //    print("[IAC GA]", terminator: "")
-        //}
+              do {
+              //  print("Socket: \(socket.socketfd):\(String(describing:socket.signature?.description))")
+                try socket.write(from: item as! String) }
+                catch {
+                  guard let socketError = error as? Socket.Error else {
+                    print("\(socket.remoteHostname):\(socket.remotePort)")
+                    return
+                  }
+              }
+
+        } // end for
     }
+
+
 }

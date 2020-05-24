@@ -12,80 +12,102 @@
 
 import Foundation
 import Dispatch
+import Socket
 
 public class ConsolePlugin: SmudPlugin {
     typealias T = ConsolePlugin
-    
+
     let smud: Smud
     let textUserInterface = TextUserInterface()
     let session: ConsoleSession
     var inputMaximumLineLength = 512
-    
-    public init(smud: Smud) {
+    public var socket: Socket
+
+    public init(smud: Smud, socket: Socket) {
         self.smud = smud
-        session = ConsoleSession(textUserInterface: textUserInterface)
+        self.socket = socket
+        session = ConsoleSession(textUserInterface: textUserInterface, socket: socket)
     }
-    
+
     public func willEnterGameLoop() {
+        var readData=Data(capacity:EchoServer.bufferSize)
         //print("TextUserInterfacePlugin: willEnterGameLoop()")
         print("Registering text user interface commands")
         textUserInterface.registerCommands()
-        
+
         print("Activating console session")
-        session.context = ChooseAccountContext(smud: smud)
-        
+        session.context = ChooseAccountContext(smud: smud, socket: self.socket)
+
         DispatchQueue.global(qos: .background).async {
             var eof = false
+            var bytesRead: Int = 0
             repeat {
-                autoreleasepool {
-                    if let line = readLine(strippingNewline: true) {
-                        DispatchQueue.main.async {
-                            self.process(line: line)
-                        }
-                    } else {
-                        eof = true
-                        print("")
-                    }
-                }
-            } while !eof
-            DispatchQueue.main.async {
-                self.smud.isTerminated = true
+            //    autoreleasepool {
+            do {
+              bytesRead = try self.socket.read(into:&readData)
+            } catch {
+              print("errore nel read del socket \(self.socket.socketfd)")
             }
+              if bytesRead > 0 {
+                guard let response=String(data:readData,encoding:.utf8) else {
+                  print(" Error decoding response...")
+                  readData.count = 0
+                  break
+                }
+
+                  let line = response.trimmingCharacters(in : .whitespacesAndNewlines)
+
+                //if response == readLine(strippingNewline: true) {
+                    DispatchQueue.main.async {
+                          self.process(line: line, socket: self.socket)
+                      }
+              //  } else {
+              //        eof = true
+                      //print("")
+                //  }
+                }
+              } while !eof
+                DispatchQueue.main.async {
+                  self.smud.isTerminated = true
+              }
         }
     }
-    
-    private func process(line: String) {
+
+    private func process(line: String, socket: Socket) {
         var line = line
         if line.count > inputMaximumLineLength {
-            session.send("WARNING: Your input was truncated.")
+            session.send("WARNING: Your input was truncated.", socket: session.socket)
             line = String(line.prefix(upTo: line.index(
                 line.startIndex, offsetBy: inputMaximumLineLength)))
         }
-    
+
         guard let context = session.context else { return }
         let args = Scanner(string: line)
-        
+
         let action: ContextAction
         do {
             action = try context.processResponse(args: args, session: session)
         } catch {
-            session.send(smud.internalErrorMessage)
+            session.send(smud.internalErrorMessage, socket: session.socket)
             print("Error in context \(context): \(error)")
             context.greet(session: session)
             return
         }
-        
+
         switch action {
         case .retry(let reason):
             if let reason = reason {
-                session.send(reason)
+                session.send(reason, socket: session.socket)
             }
             context.greet(session: session)
         case .next(let context):
             session.context = context
         case .closeSession:
             // Return to registration instead?
-            smud.isTerminated = true
+            //smud.isTerminated = true
+            let socketclose = session.socket
+            socketclose.close()
+
         }
     }
 }

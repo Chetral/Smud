@@ -28,9 +28,9 @@ class MovementCommands {
         guard let selector = context.args.scanSelector() else {
             return .showUsage("Usage: go #area.origin | #area.room:instance | #area.mobile:instance | #area.item:instance")
         }
-        
+
         guard let result = context.creature.findOne(selector: selector, entityTypes: [.creature, .room], locations: .world) else {
-            context.send("No rooms or creatures found.")
+            context.send("No rooms or creatures found.", socket: context.socket)
             return .accept
         }
 
@@ -39,7 +39,7 @@ class MovementCommands {
         switch result {
         case .creature(let creature):
             guard let room = creature.room else {
-                context.send("This creature is not standing in any room.")
+                context.send("This creature is not standing in any room.", socket: context.socket)
                 return .accept
             }
             chosenRoom = room
@@ -49,10 +49,10 @@ class MovementCommands {
             assertionFailure()
             return .accept
         }
-        
+
         context.creature.room = chosenRoom
-     
-        context.send("Relocated to \(Link(room: chosenRoom))")
+
+        context.send("Relocated to \(Link(room: chosenRoom))", socket: context.socket)
         return .accept
     }
 
@@ -61,20 +61,20 @@ class MovementCommands {
     }
 
     func move(direction: Direction, context: CommandContext) -> CommandAction {
-        
+
         guard let room = context.room else {
-            context.send("You aren't standing in any room.")
+            context.send("You aren't standing in any room.", socket: context.socket)
             return .accept
         }
-        
+
         if let room = room.resolveExit(direction: direction) {
             //context.send("You move \(direction).")
             context.creature.room = room
-            context.creature.look()
+            context.creature.look(socket: context.socket)
         } else {
-            context.send("You can't move in that direction.")
+            context.send("You can't move in that direction.", socket: context.socket)
         }
-        
+
         return .accept
     }
 }

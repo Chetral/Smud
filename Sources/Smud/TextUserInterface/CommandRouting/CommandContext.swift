@@ -11,30 +11,32 @@
 //
 
 import Foundation
+import Socket
 
 
 public class CommandContext {
     struct GameObjectType: OptionSet {
         let rawValue: Int
-        
+
         static let areaInstance = GameObjectType(rawValue: 1 << 0)
         static let room = GameObjectType(rawValue: 1 << 1)
         static let creature = GameObjectType(rawValue: 1 << 2)
     }
-    
+
     enum GameObject {
         case none
         case areaInstance(AreaInstance)
         case room(Room)
         case creature(Creature)
     }
-    
+
     let args: Scanner
     var hasArgs: Bool { return !args.isAtEnd }
-    
+
     let creature: Creature
     let session: Session
     let userCommand: String
+    let socket: Socket
 
     // Too easy to use accidentally instead of creature,
     // it's better to cast explicitly where player
@@ -51,9 +53,10 @@ public class CommandContext {
         self.creature = creature
         self.session = session
         self.userCommand = userCommand
+        self.socket = session.socket
     }
 
-    func send(_ items: Any..., separator: String = "", terminator: String = "\n") {
-        creature.send(items: items, separator: separator, terminator: terminator)
+    func send(_ items: Any..., separator: String = "", terminator: String = "\n", socket: Socket) {
+        creature.send(items: items, separator: separator, terminator: terminator, socket: session.socket)
     }
 }

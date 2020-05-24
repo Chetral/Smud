@@ -11,34 +11,37 @@
 //
 
 import Foundation
+import Socket
 
 
 final class MainMenuContext: SessionContext {
     static var name = "mainMenu"
     let smud: Smud
-    
-    init(smud: Smud) {
+    let socket: Socket
+
+    init(smud: Smud, socket: Socket) {
         self.smud = smud
+        self.socket = socket
     }
-    
+
     func greet(session: Session) {
         guard let name = session.creature?.name else { return }
         session.sendPrompt(
             "Welcome \(name)!\n" +
             "1. Play\n" +
             "0. Exit\n" +
-            "What would you like to do? ")
+            "What would you like to do? ", socket: session.socket)
     }
-    
+
     func processResponse(args: Scanner, session: Session) -> ContextAction {
         guard let optionIndex = args.scanInteger() else {
             return .retry(reason: "Please enter a number.")
         }
         switch optionIndex {
         case 1:
-            return .next(context: GameContext(smud: smud))
+            return .next(context: GameContext(smud: smud, socket: session.socket))
         case 0:
-            session.send("Goodbye!")
+            session.send("Goodbye!", socket: session.socket)
             return .closeSession
         default:
             break

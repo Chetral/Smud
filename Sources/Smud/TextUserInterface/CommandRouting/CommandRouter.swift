@@ -18,27 +18,27 @@ public class CommandRouter {
     typealias Path = (command: Command, handler: Handler)
     typealias UnknownCommandHandler = (_ context: CommandContext) -> ()
     typealias PartialMatchHandler = (_ context: CommandContext) -> ()
-    
+
     var paths = [Path]()
 
     func add(_ command: Command, _ handler: @escaping Handler) {
         paths.append(Path(command, handler))
     }
-    
+
     func add(_ commandString: String, _ options: Command.Options = [], _ handler: @escaping Handler) {
         add(Command(commandString, options: options), handler)
     }
-    
+
     subscript(_ command: Command) -> Handler {
         get { fatalError("Not implemented") }
         set { add(command, newValue) }
     }
-    
+
     public subscript(_ commandString: String, _ options: Command.Options) -> Handler {
         get { fatalError("Not implemented") }
         set { add(Command(commandString, options: options), newValue) }
     }
-    
+
     public subscript(_ commandString: String) -> Handler {
         get { fatalError("Not implemented") }
         set { add(Command(commandString), newValue) }
@@ -46,7 +46,7 @@ public class CommandRouter {
 
 
     func process(args: Scanner, creature: Creature, session: Session, unknownCommand: UnknownCommandHandler, partialMatch: PartialMatchHandler) {
-        
+
         let originalScanLocation = args.scanLocation
         for path in paths {
             if let userCommand = path.command.fetchFrom(args) {
@@ -59,13 +59,13 @@ public class CommandRouter {
                         }
                         return
                     case .showUsage(let text):
-                        context.send(text)
+                        context.send(text, socket: session.socket)
                         return
                     case .next:
                         break
                     }
                 } catch {
-                    context.send("An error has occured while processing the command.")
+                    context.send("An error has occured while processing the command.", socket: session.socket)
                     print("While processing '\(path.command.name)': \(error)")
                     return
                 }

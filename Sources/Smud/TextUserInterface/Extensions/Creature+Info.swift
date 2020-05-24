@@ -11,37 +11,41 @@
 //
 
 import Foundation
+import Socket
 
 
 extension Creature {
     var textUserInterfaceData: CreatureData { return pluginData() }
-    
-    func look() {
+
+
+    func look(socket: Socket) {
         guard let room = room else {
-            send("You aren't standing in any room.")
+            send("You aren't standing in any room.", socket: socket)
             return
         }
 
         let map = room.areaInstance.textUserInterfaceData.renderedAreaMap?.fragment(near: room, playerRoom: room, horizontalRooms: 3, verticalRooms: 3) ?? ""
 
-        send(room.title, "\n", room.description.wrapping(aroundTextColumn: map, totalWidth: 76, rightMargin: 1, bottomMargin: 1))
-        
+        send(room.title, "\n", room.description.wrapping(aroundTextColumn: map, totalWidth: 76, rightMargin: 1, bottomMargin: 1), socket: socket)
+
         for creature in room.creatures {
             if let mobile = creature as? Mobile {
-                print(mobile.shortDescription)
+                //print(mobile.shortDescription)
+                send(mobile.shortDescription, socket: socket)
             } else {
-                print(creature.name, " is standing here.")
+                //print(creature.name, " is standing here.")
+                send(creature.name, "is standind here.", socket: socket)
             }
         }
     }
-    
-    func send(items: [Any], separator: String = "", terminator: String = "", isPrompt: Bool = false) {
+
+    func send(items: [Any], separator: String = "", terminator: String = "", isPrompt: Bool = false, socket: Socket) {
         for session in textUserInterfaceData.sessions {
-            session.send(items: items, separator: separator, terminator: terminator)
+            session.send(items: items, separator: separator, terminator: terminator, socket: session.socket)
         }
     }
 
-    func send(_ items: Any..., separator: String = "", terminator: String = "\n", isPrompt: Bool = false) {
-        send(items: items, separator: separator, terminator: terminator)
+    func send(_ items: Any..., separator: String = "", terminator: String = "\n", isPrompt: Bool = false, socket: Socket) {
+        send(items: items, separator: separator, terminator: terminator, socket: socket)
     }
 }

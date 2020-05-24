@@ -23,21 +23,21 @@ class InstanceCommands {
 
     func instanceList(context: CommandContext) -> CommandAction {
         let link = context.args.scanLink()
-        
+
         guard let area = area(link: link, context: context) else {
             return .accept
         }
 
-        context.send("List of #\(area.id) instances:")
+        context.send("List of #\(area.id) instances:", socket: context.socket)
         let instances = area.instancesByIndex.keys
             .sorted()
             .map { String($0) }
             .joined(separator: ", ")
-        context.send(instances.isEmpty ? "  none." : instances)
+        context.send(instances.isEmpty ? "  none." : instances, socket: context.socket)
 
         return .accept
     }
-    
+
     func instanceNew(mode: AreaInstance.ResetMode, context: CommandContext) throws -> CommandAction {
         guard let link = context.args.scanLink(), link.areaId == nil else {
             return .showUsage("Usage: instance new #area:instance\n" +
@@ -46,21 +46,21 @@ class InstanceCommands {
         let areaId = link.entityId
 
         guard let area = context.world.areasById[areaId] else {
-            context.send("Area #\(areaId) does not exist.")
+            context.send("Area #\(areaId) does not exist.", socket: context.socket)
             return .accept
         }
 
         switch area.createInstance(withIndex: link.instanceIndex, mode: mode) {
         case .ok(let instance):
             instance.buildMap()
-            context.send("Instance #\(areaId):\(instance.index) created.")
+            context.send("Instance #\(areaId):\(instance.index) created.", socket: context.socket)
         case .instanceAlreadyExists(_):
-            context.send("Instance \(link) already exists.")
+            context.send("Instance \(link) already exists.", socket: context.socket)
         }
 
         return .accept
     }
-    
+
     func instance(context: CommandContext) -> CommandAction {
         var result = ""
         if let subcommand = context.args.scanWord() {

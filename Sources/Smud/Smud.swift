@@ -24,46 +24,52 @@ public class Smud: Config {
             flushQueueusAndTerminate()
         }
     }
-    
+
     public var db: DB!
     var areaManager: AreaManager!
-    
+
     override public init() {
         super.init()
         db = DB(smud: self)
         areaManager = AreaManager(smud: self)
     }
-    
+
     public func run() throws {
         print("Registering area format definitions")
         try registerDefinitions()
-        
+
         print("Loading world")
         try db.loadWorldPrototypes()
 
         print("Loading player accounts")
         try db.loadAccounts()
-        
+
         print("Loading player files")
         try db.loadPlayers()
-        
+
         print("Starting database updates")
         db.startUpdating()
 
         print("Initializing areas")
         areaManager.initializeAreas()
-        
+
         print("Resetting areas")
         areaManager.resetAreas()
-        
+
         print("Building area instance maps")
         areaManager.buildAreaMaps()
-        
-        print("Entering game loop")
-        plugins.forEach { $0.willEnterGameLoop() }
+
+        print("Opening telnet queue")
+        let port = 1337
+        let server = EchoServer(port:port)
+        // print("Connect with a commandline window by entering 'telnet :: 1 \(port)'")
+        server.run()
+
+      //  print("Entering game loop")
+      //  plugins.forEach { $0.willEnterGameLoop() }
         dispatchMain()
     }
-    
+
     func registerDefinitions() throws {
         print("  areas")
         try db.definitions.registerAreaFields()
@@ -72,7 +78,7 @@ public class Smud: Config {
         print("  mobiles")
         try db.definitions.registerMobileFields()
     }
-    
+
     private func flushQueueusAndTerminate() {
         DispatchQueue.main.async {
             exit(0)

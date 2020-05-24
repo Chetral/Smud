@@ -27,31 +27,31 @@ extension CommandContext {
             case .areaInstance(let areaInstance): return "Area instance #\(areaInstance.area.id):\(areaInstance.index)"
             case .linkExpected: return "Link expected."
             case .areaDoesNotExist(let areaId): return "Area #\(areaId) does not exist."
-                
+
             case .noAreaId: return "Area id not specified and you aren't standing in any room."
             case .instanceDoesNotExist(let instance): return "Instance \(instance) does not exist."
             case .areaHasNoInstances: return "Area has no instances."
             }
         }
     }
-    
+
     public func scanAreaInstance(optional: Bool = false) -> AreaInstance? {
         let arg: AreaInstanceArgument = scanAreaInstanceArgument(optional: optional)
         switch arg {
         case .areaInstance(let areaInstance): return areaInstance
         default:
-            send(arg.description)
+            print(arg.description)
             return nil
         }
     }
-    
+
     public func scanAreaInstanceArgument(optional: Bool) -> AreaInstanceArgument {
         if let link = args.scanLink() {
             let areaId = link.entityId
             guard let area = world.areasById[areaId] else {
                 return .areaDoesNotExist(areaId: areaId)
             }
-            
+
             if let instanceIndex = link.instanceIndex {
                 guard let areaInstance = area.instancesByIndex[instanceIndex] else {
                     return .instanceDoesNotExist(instance: instanceIndex)

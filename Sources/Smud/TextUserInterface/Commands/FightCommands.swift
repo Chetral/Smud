@@ -18,17 +18,17 @@ public class FightCommands {
     func register(with router: CommandRouter) {
         router["kill"] = kill
     }
-    
+
     func kill(context: CommandContext) -> CommandAction {
         guard let selector = context.args.scanSelector() else {
             return .showUsage("Kill whom?")
         }
-        
+
         guard let creature = context.creature.findCreature(selector: selector, locations: .room) else {
-            context.send("No one with this name here.")
+            context.send("No one with this name here.", socket: context.socket)
             return .accept
         }
-        
+
         //context.send("Will attack \(creature.name)")
         context.room?.fight.start(attacker: context.creature, victim: creature)
 

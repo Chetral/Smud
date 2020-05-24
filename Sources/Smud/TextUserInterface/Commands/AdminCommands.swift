@@ -21,7 +21,7 @@ class AdminCommands {
         router["area edit"] = areaEdit
         router["area save"] = areaSave
         router["area"] = area
-        
+
         router["room list"] = roomList
         router["room info"] = roomInfo
         router["room"] = room
@@ -34,13 +34,13 @@ class AdminCommands {
         router["dig down"] = { return self.dig(.down, $0) }
         router["dig"] = dig
     }
-    
+
     func areaList(context: CommandContext) -> CommandAction {
-        context.send("List of areas:")
+        context.send("List of areas:", socket: context.socket)
         let areas = context.world.areasById.sorted { lhs, rhs in
             lhs.value.title.caseInsensitiveCompare(rhs.value.title) == .orderedAscending }
         let areaList = areas.map { v in "  #\(v.value.id) \(v.value.title)" }.joined(separator: "\n")
-        context.send(areaList.isEmpty ? "  none." : areaList)
+        context.send(areaList.isEmpty ? "  none." : areaList, socket: context.socket)
         return .accept
     }
 
@@ -48,7 +48,7 @@ class AdminCommands {
         guard let player = context.creature as? Player else { return .next }
 
         guard let currentRoom = context.creature.room else {
-            context.send("You are not standing in any area.")
+            context.send("You are not standing in any area.", socket: context.socket)
             return .accept
         }
 
@@ -59,9 +59,9 @@ class AdminCommands {
         if let previousRoom = newInstance.roomsById[currentRoom.id] {
             room = previousRoom
         } else {
-            context.send("Can't find your current room in newly created instance. Probably it has been removed. Relocating to area's default room")
+            context.send("Can't find your current room in newly created instance. Probably it has been removed. Relocating to area's default room", socket: context.socket)
             guard let defaultRoom = newInstance.roomsById.values.first else {
-                context.send("Area \(newInstance.area.id) is empty")
+                context.send("Area \(newInstance.area.id) is empty", socket: context.socket)
                 newInstance.area.removeInstance(newInstance)
                 return .accept
             }
@@ -71,8 +71,8 @@ class AdminCommands {
         player.room = room
         player.editedInstances.insert(newInstance)
 
-        context.send("Relocated to \(Link(room: room)) (editing mode).")
-        context.creature.look()
+        context.send("Relocated to \(Link(room: room)) (editing mode).", socket: context.socket)
+        context.creature.look(socket: context.socket)
         return .accept
     }
 
@@ -80,30 +80,30 @@ class AdminCommands {
         guard let player = context.creature as? Player else { return .next }
 
         guard let room = player.room else {
-            context.send("You are not standing in any area.")
+            context.send("You are not standing in any area.", socket: context.socket)
             return .accept
         }
 
         let instance = room.areaInstance
         guard !player.editedInstances.contains(instance) else {
-            context.send("Already editing #\(instance.area.id):\(instance.index).")
+            context.send("Already editing #\(instance.area.id):\(instance.index).", socket: context.socket)
             return .accept
         }
 
         player.editedInstances.insert(instance)
 
-        context.send("Enabled editing on #\(instance.area.id):\(instance.index).")
-        context.creature.look()
+        context.send("Enabled editing on #\(instance.area.id):\(instance.index).", socket: context.socket)
+        context.creature.look(socket: context.socket)
         return .accept
     }
-    
+
     func areaSave(context: CommandContext) -> CommandAction {
         guard let area = context.area else {
-            context.send("You aren't standing in any area.")
+            context.send("You aren't standing in any area.", socket: context.socket)
             return .accept
         }
         area.scheduleForSaving()
-        context.send("Area #\(area.id) scheduled for saving.")
+        context.send("Area #\(area.id) scheduled for saving.", socket: context.socket)
         return .accept
     }
 
@@ -118,13 +118,13 @@ class AdminCommands {
 
     func roomList(context: CommandContext) throws -> CommandAction {
         guard let areaInstance = context.scanAreaInstance(optional: true) else { return .accept }
-        
-        context.send("List of #\(areaInstance.area.id):\(areaInstance.index) rooms:")
+
+        context.send("List of #\(areaInstance.area.id):\(areaInstance.index) rooms:", socket: context.socket)
         let rooms = areaInstance.roomsById.values
             .sorted { $0.id < $1.id }
             .map { return "  #\($0.id) \($0.title)" }
             .joined(separator: "\n")
-        context.send(rooms.isEmpty ? "  none." : rooms)
+        context.send(rooms.isEmpty ? "  none." : rooms, socket: context.socket)
         return .accept
     }
 
@@ -132,27 +132,27 @@ class AdminCommands {
         let room: Room
         if let link = context.args.scanLink() {
             guard let resolvedRoom = context.world.resolveRoom(link: link, defaultInstance: context.creature.room?.areaInstance) else {
-                context.send("Cant find room \(link)")
+                context.send("Cant find room \(link)", socket: context.socket)
                 return .accept
             }
             room = resolvedRoom
         } else {
             guard let currentRoom = context.creature.room else {
-                context.send("You are not standing in any room.")
+                context.send("You are not standing in any room.", socket: context.socket)
                 return .accept
             }
 
             if let directionWord = context.args.scanWord() {
                 guard let direction = Direction(rawValue: directionWord) else {
-                    context.send("Expected link or direction.")
+                    context.send("Expected link or direction.", socket: context.socket)
                     return .accept
                 }
                 guard let neighborLink = currentRoom.exits[direction] else {
-                    context.send("There's no room in that direction from you.")
+                    context.send("There's no room in that direction from you.", socket: context.socket)
                     return .accept
                 }
                 guard let neighborRoom = currentRoom.resolveLink(link: neighborLink) else {
-                    context.send("Can't find neighbor room.")
+                    context.send("Can't find neighbor room.", socket: context.socket)
                     return .accept
                 }
 
@@ -170,10 +170,10 @@ class AdminCommands {
             fields.append((title: directionName, content: directionLink))
         }
 
-        context.send(fields.map{ "\($0.title): \($0.content)" }.joined(separator: "\n"))
+        context.send(fields.map{ "\($0.title): \($0.content)" }.joined(separator: "\n"), socket: context.socket)
         return .accept
     }
-    
+
     func room(context: CommandContext) -> CommandAction {
         var result = ""
         if let subcommand = context.args.scanWord() {
@@ -191,27 +191,27 @@ class AdminCommands {
         guard let player = context.creature as? Player else { return .next }
 
         guard let currentRoom = context.creature.room else {
-            context.send("You are not standing in any room, there's nowhere to dig.")
+            context.send("You are not standing in any room, there's nowhere to dig.", socket: context.socket)
             return .accept
         }
 
         guard player.editedInstances.contains(currentRoom.areaInstance) else {
-            context.send("Editing is disabled on this area instance. Consider 'area edit' and 'area build' commands to enter editing mode.")
+            context.send("Editing is disabled on this area instance. Consider 'area edit' and 'area build' commands to enter editing mode.", socket: context.socket)
             return .accept
         }
 
         guard let roomId = context.args.scanWord() else {
-            context.send("Expected room identifier.")
+            context.send("Expected room identifier.", socket: context.socket)
             return .accept
         }
 
         guard let destinationRoom = currentRoom.areaInstance.digRoom(from: currentRoom, direction: direction, id: roomId) else {
-            context.send("Failed to dig room.")
+            context.send("Failed to dig room.", socket: context.socket)
             return .accept
         }
 
         context.creature.room = destinationRoom
-        context.creature.look()
+        context.creature.look(socket: context.socket)
 
         return .accept
     }
